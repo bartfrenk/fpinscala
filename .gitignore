@@ -1,1 +1,5 @@
 target
+.ensime_cache
+.ensime
+.history
+
