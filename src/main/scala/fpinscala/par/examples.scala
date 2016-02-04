@@ -17,8 +17,15 @@ class Examples[Par[_]](P: ParMonad[Par]) {
 
   def sleep(n: Long): Par[Long] = lazyUnit({Thread.sleep(n); n})
 
+  def sleepAndFail(n: Long): Par[Long] = lazyUnit(
+    {Thread.sleep(n); throw new Exception(s"Failed after $n seconds")}
+  )
+
   def sleep2(n: Long, m: Long): Par[Long] = map2(sleep(n), sleep(m))(_ + _)
 
+  def sleep2AndFailOnFirst(n: Long, m: Long): Par[Long] = map2(sleepAndFail(n), sleep(m))(_ + _)
+
   def sleepSeq(ns: List[Long]): Par[List[Long]] = sequence(ns map sleep)
+
 
 }
