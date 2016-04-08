@@ -32,6 +32,7 @@ object NonBlockingImpl {
   }
 
   object Monad extends ParMonad[Par] {
+    override def flatMap[A, B](A: Par[A])(f: A => Par[B]): Par[B] = undefined
     def delay[A](a: => Par[A]): Par[A] = es => a(es)
     def fork[A](a: => Par[A]): Par[A] =
       es => new Future[A] {

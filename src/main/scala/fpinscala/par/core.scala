@@ -14,9 +14,13 @@ trait ParMonad[Par[_]] {self =>
   def delay[A](a: => Par[A]): Par[A]
   def fork[A](a: => Par[A]): Par[A]
   def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C]
+    // = flatMap(a)(x => (b map (y => f(x, y))))
+
   def unit[A](a: A): Par[A]
+  def flatMap[A, B](a: Par[A])(f: A => Par[B]): Par[B] = join(a map f)
 
   /** Derived combinators. */
+  def join[A](a: Par[Par[A]]): Par[A] = flatMap(a)(x => x)
   def map[A, B](a: Par[A])(f: A => B): Par[B] =
     map2(a, unit(()))((a, _) => f(a))
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
@@ -32,9 +36,14 @@ trait ParMonad[Par[_]] {self =>
       as map (asyncF((a: A) => if (p(a)) List(a) else List.empty))
     map(sequence(ps))(_.flatten)
   }
+  def choice[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
+    cond flatMap (prop => if(prop) t else f)
+  def choiceN[A](index: Par[Int])(choices: List[Par[A]]) =
+    index flatMap (i => choices(i))
 
   /** Infixable operations. */
   case class ParOps[A](p: Par[A]) {
     def map[B](f: A => B): Par[B] = self.map(p)(f)
+    def flatMap[B](f: A => Par[B]): Par[B] = self.flatMap(p)(f)
   }
 }

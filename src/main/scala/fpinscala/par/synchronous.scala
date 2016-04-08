@@ -14,6 +14,7 @@ object SynchronousImpl {
 
   object Monad extends ParMonad[Par] {
     def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = Par(f(a.get(), b.get()))
+    override def flatMap[A, B](a: Par[A])(f: A => Par[B]): Par[B] = f(a.get())
     def fork[A](a: => Par[A]): Par[A] = a
     def unit[A](a: A): Par[A] = Par(a)
     def delay[A](a: => Par[A]): Par[A] = fork(a)

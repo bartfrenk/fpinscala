@@ -47,10 +47,10 @@ object ParActor {
   }
 
   /** Waits on the result of a parallel computation. */
-  def run[A](a: Par[A]): A = Monad.get(a)
+  // def run[A](a: Par[A]): A
 
   object Monad extends ParMonad[Par] {
-    def get[A](a: Par[A]): A = undefined
+    override def flatMap[A, B](a: Par[A])(f: A => Par[B]): Par[B] = undefined
     def delay[A](a: => Par[A]) = fac => a(fac)
     def map2[A, B, C](p: Par[A], q: Par[B])(f: (A, B) => C): Par[C] = fac => new Future[C] {
       def apply(cb: C => Unit): Unit = {

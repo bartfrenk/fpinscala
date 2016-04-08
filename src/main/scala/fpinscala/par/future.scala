@@ -37,11 +37,15 @@ object FutureImpl {
   }
 
   object Monad extends ParMonad[Par] {
-    def get[A](a: Par[A]): A = undefined
     def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] =
       (es: ExecutorService) => {
         Future.map2(a(es), b(es))(f)
       }
+    /** Implementation of flatMap that block on the Future of 'a'.
+      * Due to lack of callbacks anything else must run in a seperate
+      * thread.*/
+    override def flatMap[A, B](a: Par[A])(f: A => Par[B]): Par[B] =
+      es => f(a(es).get)(es)
     def fork[A](a: => Par[A]): Par[A] = {
       es => es.submit(new Callable[A] {
         // blocks on new thread, and causes deadlock when 'es'
