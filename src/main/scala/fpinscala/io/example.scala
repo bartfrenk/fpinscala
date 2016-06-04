@@ -1,5 +1,8 @@
 package fpinscala.io
 
+// TODO: add scalaz to build.sbt
+import scalaz.Monad._
+
 object Contest {
 
   case class Player(name: String, score: Int)
@@ -14,4 +17,16 @@ object Contest {
     case None => println("It's a draw")
   }
 
+}
+
+sealed trait IO[A] { self =>
+  def run: A
+  def map[B](f: A => B): IO[B] =
+    new IO[B] { def run = f(self.run) }
+  def flatMap[B](f: A => IO[B]): IO[B] =
+    new IO[B] { def run = f(self.run).run }
+}
+
+object IO extends Monad[IO] {
+  // Here
 }
